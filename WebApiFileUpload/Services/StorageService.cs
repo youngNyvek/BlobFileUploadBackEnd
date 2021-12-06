@@ -12,7 +12,7 @@ namespace WebApiFileUpload.Services
         private readonly IConfiguration configuration;
         
 
-    public StorageService(BlobServiceClient blobServiceClient, IConfiguration configuration)
+        public StorageService(BlobServiceClient blobServiceClient, IConfiguration configuration)
         {
             this.blobServiceClient = blobServiceClient;
             this.configuration = configuration;
@@ -21,35 +21,30 @@ namespace WebApiFileUpload.Services
 
         public void Upload(IFormFile[] formFile)
         {
-            var containerName = configuration.GetSection("Storage:ContainerName").Value;
-
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-
+            string containerName = configuration.GetSection("Storage:ContainerName").Value;
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
             for(var file = 0; file < formFile.Length; file++)
             {
-                var blobClient = containerClient.GetBlobClient(formFile[file].FileName);
+                BlobClient blobClient = containerClient.GetBlobClient(formFile[file].FileName);
 
-                var stream = formFile[file].OpenReadStream();
+                Stream stream = formFile[file].OpenReadStream();
                 blobClient.Upload(stream, true);
             }
         }
 
         public DownloadBlobDto Download(string filename)
         {
-            BlobClient blobClient;
-            BlobDownloadResult blobContent;
-
-            var containerName = configuration.GetSection("Storage:ContainerName").Value;
-            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
-            blobClient = containerClient.GetBlobClient(filename);
-            blobContent = blobClient.DownloadContent();
+            string containerName = configuration.GetSection("Storage:ContainerName").Value;
+            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            BlobClient blobClient = containerClient.GetBlobClient(filename);
            
             Stream blobStream = blobClient.OpenRead();
+            string contetType = Path.GetExtension(blobClient.Name);
 
             return new DownloadBlobDto()
             {
-                BlobContent = blobContent,
-                BlobStream = blobStream
+                contentType = $"image/{contetType.TrimStart('.')}",
+                stream = blobStream
             };
         }
     }

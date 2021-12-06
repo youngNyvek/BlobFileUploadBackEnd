@@ -5,7 +5,7 @@ namespace WebApiFileUpload.Services
 {
     public class DownloadBlobDto
     {
-       public BlobDownloadResult BlobContent { get; set; }
-       public Stream BlobStream { get; set; }
+       public string contentType { get; set; }
+       public Stream stream { get; set; }
     }
 }
